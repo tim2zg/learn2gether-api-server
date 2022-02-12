@@ -13,11 +13,11 @@ var (
 	addr = "0.0.0.0:42069"
 )
 
-var data map[string]interface{}
+var topicdata map[string]interface{}
 
 func main() {
-	data = dataloader()
-	fmt.Println(data)
+	topicdata = dataloader()
+	fmt.Println(topicdata)
 	h := mainrequestHandler
 
 	if err := fasthttp.ListenAndServe(addr, h); err != nil {
@@ -39,7 +39,6 @@ func dataloader() map[string]interface{} {
 			fmt.Println(err)
 		}
 	}(jsonFile)
-
 	byteValue, _ := ioutil.ReadAll(jsonFile)
 
 	var result map[string]interface{}
@@ -52,9 +51,8 @@ func dataloader() map[string]interface{} {
 
 func mainrequestHandler(rqu *fasthttp.RequestCtx) {
 	path := string(rqu.Path()[:])
-	switch path {
-	case "/topics":
-		j, err := json.Marshal(data)
+	if path == "/topics"+rqu.IsGet() { // See if User has the auth header and is loged in // How to make to Statements in Go?!? still on a plane no way to look it up...
+		j, err := json.Marshal(topicdata)
 		if err != nil {
 			fmt.Printf("Error: %s", err.Error())
 		} else {
@@ -65,11 +63,16 @@ func mainrequestHandler(rqu *fasthttp.RequestCtx) {
 			return
 		}
 		rqu.SetContentType("application/json; charset=utf8")
-	default:
+	} else if topicdata["asdf"] == "asdf" { // see if data is there
+		// serv json data file
+	} else if path == "/login" {
+		// redirect to microsoft api call
+	} else {
+		// make false tries...
 		rqu.SetContentType("text/plain")
 		rqu.SetStatusCode(404)
 		rqu.SetBodyString("404")
-
 	}
 	rqu.Response.Header.Set("Access-Control-Allow-Origin", "*")
+
 }

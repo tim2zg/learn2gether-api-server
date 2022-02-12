@@ -1,14 +1,10 @@
 {
   "users": [
     {
-      "name": "Elliot",
-      "type": "Reader",
-      "age": 23
+      "name": "Elliot"
     },
     {
-      "name": "Fraser",
-      "type": "Author",
-      "age": 13
+      "name": "Fraser"
     }
   ]
 }
