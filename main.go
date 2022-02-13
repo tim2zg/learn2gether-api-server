@@ -51,7 +51,7 @@ func dataloader() map[string]interface{} {
 
 func mainrequestHandler(rqu *fasthttp.RequestCtx) {
 	path := string(rqu.Path()[:])
-	if path == "/topics"+rqu.IsGet() { // See if User has the auth header and is loged in // How to make to Statements in Go?!? still on a plane no way to look it up...
+	if path == "/topics" && rqu.IsGet() { // Got it
 		j, err := json.Marshal(topicdata)
 		if err != nil {
 			fmt.Printf("Error: %s", err.Error())
