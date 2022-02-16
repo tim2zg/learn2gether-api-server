@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 )
 
 var (
@@ -51,6 +52,7 @@ func dataloader() map[string]interface{} {
 
 func mainrequestHandler(rqu *fasthttp.RequestCtx) {
 	path := string(rqu.Path()[:])
+	pathformated := strings.Split(string(rqu.Path()[:]), "/")
 	if path == "/topics" && rqu.IsGet() { // Got it
 		j, err := json.Marshal(topicdata)
 		if err != nil {
@@ -63,8 +65,13 @@ func mainrequestHandler(rqu *fasthttp.RequestCtx) {
 			return
 		}
 		rqu.SetContentType("application/json; charset=utf8")
-	} else if topicdata["asdf"] == "asdf" { // see if data is there
-		// serv json data file
+	} else if cap(pathformated) > 1 && pathformated[1] == "topic" {
+		if _, ok := topicdata["topic index"]; ok {
+			rqu.SetContentType("text/plain")
+			rqu.SetStatusCode(200)
+			fmt.Println(topicdata["topic index"])
+			rqu.SetBodyString(pathformated[2])
+		}
 	} else if path == "/login" {
 		// redirect to microsoft api call
 	} else {

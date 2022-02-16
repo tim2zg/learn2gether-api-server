@@ -1,10 +1,10 @@
 {
-  "users": [
-    {
-      "name": "Elliot"
-    },
-    {
-      "name": "Fraser"
-    }
-  ]
+  "topic index": [
+    "test",
+    "test2",
+    "test3"
+  ],
+  "test": {},
+  "test2": {},
+  "test3": {}
 }
