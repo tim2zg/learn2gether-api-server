@@ -1,10 +1,7 @@
 {
   "topicindex": [
-    "test",
-    "test2",
-    "test3"
-  ],
-  "test": {},
-  "test2": {},
-  "test3": {}
+    "test.json",
+    "test2.json",
+    "test3.json"
+  ]
 }

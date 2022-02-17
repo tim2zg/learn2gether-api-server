@@ -4,9 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/valyala/fasthttp"
-	"io/ioutil"
 	"log"
-	"os"
 	"strings"
 )
 
@@ -14,7 +12,7 @@ var (
 	addr = "0.0.0.0:42069"
 )
 
-var topicdata map[string]interface{}
+var topicdata []string
 
 func main() {
 	topicdata = dataloader()
@@ -26,28 +24,17 @@ func main() {
 	}
 }
 
-func dataloader() map[string]interface{} {
-	// Open our jsonFile
-	jsonFile, err := os.Open("data.json")
-	// if we os.Open returns an error then handle it
-	if err != nil {
-		fmt.Println(err)
-	}
-	// defer the closing of our jsonFile so that we can parse it later on
-	defer func(jsonFile *os.File) {
-		err := jsonFile.Close()
-		if err != nil {
-			fmt.Println(err)
-		}
-	}(jsonFile)
-	byteValue, _ := ioutil.ReadAll(jsonFile)
+func dataloader() []string {
+	return []string{"1, 2, 3", "asdf"}
+}
 
-	var result map[string]interface{}
-	err2 := json.Unmarshal([]byte(byteValue), &result)
-	if err2 != nil {
-		fmt.Println(err2)
+func stringInSlice(a string, list []string) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
 	}
-	return result
+	return false
 }
 
 func mainrequestHandler(rqu *fasthttp.RequestCtx) {
@@ -70,11 +57,10 @@ func mainrequestHandler(rqu *fasthttp.RequestCtx) {
 		}
 		rqu.SetContentType("application/json; charset=utf8")
 	} else if cap(pathformated) > 2 && pathformated[1] == "topic" {
-		if _, ok := topicdata["topic index"]; ok {
+		if stringInSlice(pathformated[2], topicdata) {
 			rqu.SetContentType("text/plain")
 			rqu.SetStatusCode(200)
-			fmt.Println(topicdata["topic index"])
-
+			rqu.SetBodyString("true")
 		}
 	} else if path == "/login" {
 		// redirect to microsoft api call
