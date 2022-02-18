@@ -13,6 +13,7 @@ var (
 )
 
 var topicdata []string
+var authtokens []string
 
 func main() {
 	topicdata = dataloader()
@@ -44,28 +45,39 @@ func mainrequestHandler(rqu *fasthttp.RequestCtx) {
 		path = strings.TrimSuffix(path, "/")
 	}
 	pathformated := strings.Split(path, "/")
-	if path == "/topics" && rqu.IsGet() { // Got it
-		j, err := json.Marshal(topicdata)
-		if err != nil {
-			fmt.Printf("Error: %s", err.Error())
+	auth := string(rqu.Request.Header.Cookie("auth"))
+
+	if stringInSlice(auth, authtokens) {
+		if path == "/topics" && rqu.IsGet() { // Got it
+			j, err := json.Marshal(topicdata)
+			if err != nil {
+				fmt.Printf("Error: %s", err.Error())
+			} else {
+				fmt.Println(string(j))
+			}
+			_, err2 := fmt.Fprintf(rqu, string(j))
+			if err2 != nil {
+				return
+			}
+			rqu.SetContentType("application/json; charset=utf8")
+		} else if cap(pathformated) > 2 && pathformated[1] == "topic" {
+			if stringInSlice(pathformated[2], topicdata) {
+				rqu.SetContentType("text/plain")
+				rqu.SetStatusCode(200)
+				rqu.SetBodyString("true")
+			}
 		} else {
-			fmt.Println(string(j))
-		}
-		_, err2 := fmt.Fprintf(rqu, string(j))
-		if err2 != nil {
-			return
-		}
-		rqu.SetContentType("application/json; charset=utf8")
-	} else if cap(pathformated) > 2 && pathformated[1] == "topic" {
-		if stringInSlice(pathformated[2], topicdata) {
+			// mark false tries...
 			rqu.SetContentType("text/plain")
-			rqu.SetStatusCode(200)
-			rqu.SetBodyString("true")
+			rqu.SetStatusCode(404)
+			rqu.SetBodyString("404")
 		}
-	} else if path == "/login" {
-		// redirect to microsoft api call
+		rqu.Redirect("/topics", 200)
 	} else {
-		// make false tries...
+		if path == "/login" {
+		}
+		//call microsoft graph api
+		// mark false tries...
 		rqu.SetContentType("text/plain")
 		rqu.SetStatusCode(404)
 		rqu.SetBodyString("404")
