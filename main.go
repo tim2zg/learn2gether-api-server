@@ -5,15 +5,23 @@ import (
 	"fmt"
 	"github.com/valyala/fasthttp"
 	"log"
+	"math/rand"
 	"strings"
+	"time"
 )
 
 var (
 	addr = "0.0.0.0:42069"
 )
 
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
+
 var topicdata []string
 var authtokens []string
+
+var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 func main() {
 	topicdata = dataloader()
@@ -36,6 +44,14 @@ func stringInSlice(a string, list []string) bool {
 		}
 	}
 	return false
+}
+
+func randomstring(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+	return string(b)
 }
 
 func mainrequestHandler(rqu *fasthttp.RequestCtx) {
@@ -77,6 +93,7 @@ func mainrequestHandler(rqu *fasthttp.RequestCtx) {
 		if path == "/login" {
 		}
 		//call microsoft graph api
+
 		// mark false tries...
 		rqu.SetContentType("text/plain")
 		rqu.SetStatusCode(404)
