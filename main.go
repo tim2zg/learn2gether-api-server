@@ -20,12 +20,11 @@ func init() {
 
 var topicdata []string
 var authtokens []string
-
 var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 func main() {
 	topicdata = dataloader()
-	fmt.Println(topicdata)
+	//fmt.Println(topicdata)
 	h := mainrequestHandler
 
 	if err := fasthttp.ListenAndServe(addr, h); err != nil {
@@ -63,18 +62,24 @@ func mainrequestHandler(rqu *fasthttp.RequestCtx) {
 	pathformated := strings.Split(path, "/")
 	auth := string(rqu.Request.Header.Cookie("auth"))
 
+	fmt.Println("Curent Cookie: " + auth)
+	fmt.Println("All Cookies: ")
+	fmt.Println(authtokens)
+
 	if stringInSlice(auth, authtokens) {
+		fmt.Printf("True")
 		if path == "/topics" && rqu.IsGet() { // Got it
 			j, err := json.Marshal(topicdata)
 			if err != nil {
 				fmt.Printf("Error: %s", err.Error())
 			} else {
-				fmt.Println(string(j))
+				//fmt.Println(string(j))
 			}
 			_, err2 := fmt.Fprintf(rqu, string(j))
 			if err2 != nil {
 				return
 			}
+			rqu.SetBodyString(string(j))
 			rqu.SetContentType("application/json; charset=utf8")
 		} else if cap(pathformated) > 2 && pathformated[1] == "topic" {
 			if stringInSlice(pathformated[2], topicdata) {
@@ -88,16 +93,28 @@ func mainrequestHandler(rqu *fasthttp.RequestCtx) {
 			rqu.SetStatusCode(404)
 			rqu.SetBodyString("404")
 		}
-		rqu.Redirect("/topics", 200)
 	} else {
 		if path == "/login" {
+			var c fasthttp.Cookie
+			rqu.SetContentType("text/plain")
+			rqu.SetBodyString("OK")
+			rqu.SetStatusCode(200)
+			randomstringlol := randomstring(420)
+			authtokens = append(authtokens, randomstringlol)
+			c.SetMaxAge(3600000)
+			//cookie.SetDomain("")
+			//cookie.SetPath(("/"))
+			c.SetSecure(true)
+			//call microsoft graph api
+			c.SetKey("auth")
+			c.SetValue(randomstringlol)
+			rqu.Response.Header.SetCookie(&c)
+		} else {
+			// mark false tries...
+			rqu.SetContentType("text/plain")
+			rqu.SetStatusCode(404)
+			rqu.SetBodyString("404")
 		}
-		//call microsoft graph api
-
-		// mark false tries...
-		rqu.SetContentType("text/plain")
-		rqu.SetStatusCode(404)
-		rqu.SetBodyString("404")
 	}
 	rqu.Response.Header.Set("Access-Control-Allow-Origin", "*")
 
