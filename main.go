@@ -124,25 +124,45 @@ func mainrequestHandler(rqu *fasthttp.RequestCtx) {
 		}
 	} else {
 		if path == "/login" {
-			rqu.Redirect(getredicturl(), 200)
-		} else if path == "/getthetocken" {
-			code := string(rqu.QueryArgs().Peek("code"))
-			name := request(gettoken(code))
-			if stringInSlice(name, users) {
-				var c fasthttp.Cookie
-				rqu.SetContentType("text/plain")
-				rqu.SetBodyString("OK")
-				rqu.SetStatusCode(200)
-				randomstringlol := randomstring(420)
-				authtokens = append(authtokens, randomstringlol)
-				c.SetMaxAge(3600000)
-				c.SetSecure(true)
-				c.SetKey("auth")
-				c.SetValue(randomstringlol)
-				rqu.Response.Header.SetCookie(&c)
+			url, err := getredicturl()
+			if err != nil {
+				rqu.SetBodyString("Error")
+				rqu.SetStatusCode(500)
 			} else {
-				rqu.SetBodyString("Not allowed!")
+				rqu.Redirect(url, 200)
+			}
+		} else if path == "/getthetocken" {
+			name := ""
+			code := string(rqu.QueryArgs().Peek("code"))
+			token, err := gettoken(code)
+			if err != nil {
+				rqu.SetBodyString("Wrong Token")
 				rqu.SetStatusCode(430)
+				//Mark tries
+			} else {
+				name, err = request(token)
+				if err != nil {
+					rqu.SetBodyString("Error")
+					rqu.SetStatusCode(430)
+					//Mark tries
+				} else {
+					if stringInSlice(name, users) {
+						var c fasthttp.Cookie
+						rqu.SetContentType("text/plain")
+						rqu.SetBodyString("OK")
+						rqu.SetStatusCode(200)
+						randomstringlol := randomstring(420)
+						authtokens = append(authtokens, randomstringlol)
+						c.SetMaxAge(3600000)
+						c.SetSecure(true)
+						c.SetKey("auth")
+						c.SetValue(randomstringlol)
+						rqu.Response.Header.SetCookie(&c)
+					} else {
+						rqu.SetBodyString("Not allowed!")
+						rqu.SetStatusCode(430)
+					}
+				}
 			}
 		} else {
 			// mark false tries...
