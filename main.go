@@ -137,7 +137,7 @@ func mainrequestHandler(rqu *fasthttp.RequestCtx) {
 			token, err := gettoken(code)
 			if err != nil {
 				rqu.SetBodyString("Wrong Token")
-				rqu.SetStatusCode(430)
+				rqu.SetStatusCode(403)
 				//Mark tries
 			} else {
 				name, err = request(token)
